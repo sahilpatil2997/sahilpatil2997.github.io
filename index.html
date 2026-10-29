@@ -1,0 +1,408 @@
+<title>Sahil Patil — Backend Engineer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /*
+    Layout concept: a single-column "terminal session" reading top to bottom —
+    each section is framed like a shell command output (prompt + cwd as the
+    section eyebrow), which is an authentic device for a backend engineer's
+    page rather than decoration.
+  */
+  :root {
+    --bg: #f7f8fa;
+    --surface: #ffffff;
+    --fg: #14181f;
+    --muted: #5b6472;
+    --accent: #00adc8;
+    --accent-fg: #ffffff;
+    --border: #e2e5ea;
+    --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    --sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --fg: #e6edf3;
+      --muted: #8b949e;
+      --accent: #4dd0e8;
+      --accent-fg: #06252c;
+      --border: #30363d;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --fg: #e6edf3;
+    --muted: #8b949e;
+    --accent: #4dd0e8;
+    --accent-fg: #06252c;
+    --border: #30363d;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--sans);
+    line-height: 1.55;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding-block: 56px 80px;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero { display: flex; flex-direction: column; gap: 18px; margin-bottom: 56px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+  }
+  .eyebrow .prompt { color: var(--muted); }
+  h1 {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: clamp(1.9rem, 5vw, 2.6rem);
+    margin: 0;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .role {
+    font-size: 1.05rem;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .role strong { color: var(--fg); font-weight: 600; }
+  .bio {
+    max-width: 62ch;
+    font-size: 1rem;
+    color: var(--fg);
+  }
+  .links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+  .btn {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 9px 16px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    color: var(--fg);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: border-color .15s ease, transform .15s ease;
+  }
+  .btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .btn.primary {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border-color: var(--accent);
+  }
+  .contact-row { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 4px; }
+  .contact-item {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 0;
+  }
+  .contact-item:hover { color: var(--fg); }
+
+  /* ---------- Sections ---------- */
+  section { margin-bottom: 52px; }
+  .section-head {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-head .prompt { color: var(--accent); }
+
+  /* ---------- Impact tiles ---------- */
+  .impact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+  }
+  .tile {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 16px;
+    min-width: 0;
+  }
+  .tile .num {
+    font-family: var(--mono);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    display: block;
+  }
+  .tile .label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 4px;
+    display: block;
+  }
+
+  /* ---------- Experience ---------- */
+  .job { margin-bottom: 32px; }
+  .job:last-child { margin-bottom: 0; }
+  .job-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .job-title { font-weight: 600; font-size: 1.02rem; }
+  .job-dates {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .job-company { color: var(--muted); font-size: 0.92rem; margin-bottom: 10px; }
+  .job ul { margin: 0; padding-left: 20px; }
+  .job li { margin-bottom: 6px; }
+  .job li::marker { color: var(--accent); }
+
+  /* ---------- Skills ---------- */
+  .skill-group { margin-bottom: 16px; }
+  .skill-group:last-child { margin-bottom: 0; }
+  .skill-group .cat {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    color: var(--fg);
+  }
+
+  /* ---------- Education ---------- */
+  .edu-row { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .edu-degree { font-weight: 600; }
+  .edu-school { color: var(--muted); font-size: 0.92rem; }
+  .edu-dates { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  footer a { color: var(--muted); }
+  footer a:hover { color: var(--accent); }
+
+  .toast {
+    position: fixed;
+    bottom: max(20px, env(safe-area-inset-bottom, 0px));
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--fg);
+    color: var(--bg);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    padding: 8px 14px;
+    border-radius: 7px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s ease, transform .15s ease;
+    z-index: 20;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 480px) {
+    .job-head { flex-direction: column; gap: 2px; }
+    footer { flex-direction: column; }
+  }
+</style>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="eyebrow"><span class="prompt">~$</span> whoami</div>
+    <h1>Sahil Patil</h1>
+    <div class="role"><strong>Senior Backend Engineer</strong> — Go · Microservices · Distributed Systems</div>
+    <p class="bio">Backend engineer with 5+ years building high-throughput Golang microservices across AdTech, FinTech, FoodTech and GovTech. Currently own real-time retail-media services at Pentaleap serving 2M+ requests/day for 6 retail clients.</p>
+    <div class="links">
+      <a class="btn primary" href="https://github.com/sahilpatil2997" target="_blank" rel="noopener">↗ GitHub</a>
+      <a class="btn" href="https://www.linkedin.com/in/tecsavy/" target="_blank" rel="noopener">↗ LinkedIn</a>
+    </div>
+    <div class="contact-row">
+      <button class="contact-item" data-copy="sahilpatil97@gmail.com">✉ sahilpatil97@gmail.com</button>
+      <button class="contact-item" data-copy="+91 9167986795">☎ +91 9167986795</button>
+      <span class="contact-item" style="cursor:default">📍 Mumbai, India</span>
+    </div>
+  </div>
+
+  <section>
+    <div class="section-head"><span class="prompt">~$</span> cat impact.log</div>
+    <div class="impact-grid">
+      <div class="tile"><span class="num">2M+</span><span class="label">requests/day served (Pentaleap)</span></div>
+      <div class="tile"><span class="num">~70%</span><span class="label">fewer repeat production incidents</span></div>
+      <div class="tile"><span class="num">1M</span><span class="label">orders/day on a FoodTech platform</span></div>
+      <div class="tile"><span class="num">40% / 70%</span><span class="label">faster onboarding / faster APIs</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="prompt">~$</span> ls experience/</div>
+
+    <div class="job">
+      <div class="job-head">
+        <div class="job-title">Backend Engineer</div>
+        <div class="job-dates">Jan 2023 — Present</div>
+      </div>
+      <div class="job-company">Pentaleap GmbH (formerly Crealytics) · Remote / Mumbai</div>
+      <ul>
+        <li>Built a real-time Go service that caches bid-based sponsored products in Redis, serving the sponsoring engine at 2M+ requests/day.</li>
+        <li>Designed the core ranking and sponsoring algorithms deciding which sponsored products shoppers see, in production for 6 retail clients.</li>
+        <li>Cut repeat production incidents by nearly 70% through root-cause fixes, bringing services back within SLA.</li>
+        <li>Raised test coverage to 60% with unit and BDD suites across core services.</li>
+        <li>Designed event-driven services over gRPC and NATS, containerized with Docker and deployed to Kubernetes on AWS and GCP via CI/CD.</li>
+      </ul>
+    </div>
+
+    <div class="job">
+      <div class="job-head">
+        <div class="job-title">Golang Developer</div>
+        <div class="job-dates">May 2021 — Dec 2022</div>
+      </div>
+      <div class="job-company">Coditation Systems Pvt. Ltd. · Pune</div>
+      <ul>
+        <li>Architected a FoodTech platform on Go microservices (gRPC, PostgreSQL, Kubernetes) supporting 1M orders/day.</li>
+        <li>Built an Account Aggregator framework for a money-lending platform, integrating third-party financial APIs for consent-based onboarding.</li>
+        <li>Cut customer onboarding time by 40% and API response times by 70% redesigning the lending platform's onboarding flow.</li>
+        <li>Built a GraphQL client code generator in Go (dave/jennifer) and a GraphQL-based Salesforce connector, saving ~2 hours per integration.</li>
+        <li>Built the Go backend for Maharashtra's FYJC 2020 state-wide Class 11 admission portal, serving 5 lakh+ applicants, plus a Vue.js grievance module.</li>
+      </ul>
+    </div>
+
+    <div class="job">
+      <div class="job-head">
+        <div class="job-title">Project Trainee, Software Development</div>
+        <div class="job-dates">Jul 2019 — Apr 2021</div>
+      </div>
+      <div class="job-company">MKCL (Maharashtra Knowledge Corporation Ltd.) · Navi Mumbai</div>
+      <ul>
+        <li>Delivered the Portals and Deployment Manager modules of Application Studio, a low-code platform for automated web app development.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="prompt">~$</span> cat skills.json</div>
+    <div class="skill-group">
+      <span class="cat">Languages</span>
+      <div class="chips">
+        <span class="chip">Go</span><span class="chip">Scala</span><span class="chip">SQL</span><span class="chip">JavaScript (Vue.js)</span><span class="chip">Python</span>
+      </div>
+    </div>
+    <div class="skill-group">
+      <span class="cat">Backend &amp; architecture</span>
+      <div class="chips">
+        <span class="chip">Microservices</span><span class="chip">Distributed Systems</span><span class="chip">Event-Driven Architecture</span><span class="chip">System Design</span><span class="chip">REST</span><span class="chip">gRPC</span><span class="chip">GraphQL</span><span class="chip">NATS</span>
+      </div>
+    </div>
+    <div class="skill-group">
+      <span class="cat">Data</span>
+      <div class="chips">
+        <span class="chip">PostgreSQL</span><span class="chip">MySQL</span><span class="chip">MongoDB</span><span class="chip">Redis</span>
+      </div>
+    </div>
+    <div class="skill-group">
+      <span class="cat">Cloud &amp; DevOps</span>
+      <div class="chips">
+        <span class="chip">Docker</span><span class="chip">Kubernetes</span><span class="chip">CI/CD</span><span class="chip">AWS (EC2, S3, API Gateway, Elastic Beanstalk, CloudWatch)</span><span class="chip">GCP</span>
+      </div>
+    </div>
+    <div class="skill-group">
+      <span class="cat">Testing &amp; tools</span>
+      <div class="chips">
+        <span class="chip">Unit Testing</span><span class="chip">BDD</span><span class="chip">Git</span><span class="chip">Agile/Scrum</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="prompt">~$</span> cat education.yml</div>
+    <div class="edu-row">
+      <div>
+        <div class="edu-degree">Bachelor of Engineering, Information Technology</div>
+        <div class="edu-school">Terna Engineering College, Navi Mumbai</div>
+      </div>
+      <div class="edu-dates">Jun 2015 — Jun 2019</div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Open to Go backend roles · remote or Mumbai-based</span>
+    <span><a href="https://github.com/sahilpatil2997" target="_blank" rel="noopener">github.com/sahilpatil2997</a> · <a href="https://www.linkedin.com/in/tecsavy/" target="_blank" rel="noopener">linkedin.com/in/tecsavy</a></span>
+  </footer>
+
+</div>
+
+<div class="toast" id="toast">Copied</div>
+
+<script>
+  (function () {
+    var toast = document.getElementById('toast');
+    var toastTimer;
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 1400);
+    }
+    document.querySelectorAll('.contact-item[data-copy]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var text = el.getAttribute('data-copy');
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () {
+            showToast('Copied ' + text);
+          }).catch(function () {
+            showToast(text);
+          });
+        } else {
+          showToast(text);
+        }
+      });
+    });
+  })();
+</script>

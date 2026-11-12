@@ -84,9 +84,16 @@
     transition: border-color .15s ease, color .15s ease;
   }
   .theme-toggle:hover { border-color: var(--accent); color: var(--fg); }
+  .theme-toggle:active, .btn:active, .contact-item:active, .chip:active { transform: scale(0.96); }
 
   /* ---------- Hero ---------- */
-  .hero { display: flex; flex-direction: column; gap: 18px; margin-bottom: 56px; }
+  .hero {
+    display: flex; flex-direction: column; gap: 18px; margin-bottom: 56px;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity .6s ease, transform .6s ease;
+  }
+  .hero.loaded { opacity: 1; transform: translateY(0); }
   .eyebrow {
     font-family: var(--mono);
     font-size: 0.8rem;
@@ -102,6 +109,18 @@
     text-wrap: balance;
     letter-spacing: -0.01em;
   }
+  @supports (background-clip: text) or (-webkit-background-clip: text) {
+    h1.shimmer {
+      background-image: linear-gradient(100deg, var(--fg) 35%, var(--accent) 50%, var(--fg) 65%);
+      background-size: 250% 100%;
+      background-position: 100% 0;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: shimmer 1.6s ease-out .2s 1 forwards;
+    }
+  }
+  @keyframes shimmer { to { background-position: 0% 0; } }
   .role { font-size: 1.05rem; color: var(--muted); font-weight: 500; min-height: 1.4em; }
   .role strong { color: var(--fg); font-weight: 600; }
   .role .cursor {
@@ -173,8 +192,11 @@
     border-radius: 10px;
     padding: 18px 16px;
     min-width: 0;
-    transition: border-color .15s ease, transform .15s ease;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity .45s ease, transform .45s ease, border-color .15s ease;
   }
+  section.visible .tile { opacity: 1; transform: translateY(0); }
   .tile:hover { border-color: var(--accent); transform: translateY(-2px); }
   .tile .num {
     font-family: var(--mono);
@@ -192,8 +214,11 @@
     border-left: 2px solid var(--border);
     padding-left: 18px;
     position: relative;
-    transition: border-color .2s ease;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity .45s ease, transform .45s ease, border-color .2s ease;
   }
+  section.visible .job { opacity: 1; transform: translateY(0); }
   .job::before {
     content: '';
     position: absolute;
@@ -217,7 +242,13 @@
   .job li::marker { color: var(--accent); }
 
   /* ---------- Skills ---------- */
-  .skill-group { margin-bottom: 16px; }
+  .skill-group {
+    margin-bottom: 16px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity .4s ease, transform .4s ease;
+  }
+  section.visible .skill-group { opacity: 1; transform: translateY(0); }
   .skill-group:last-child { margin-bottom: 0; }
   .skill-group .cat {
     font-family: var(--mono);
@@ -266,19 +297,23 @@
     position: fixed;
     bottom: max(20px, env(safe-area-inset-bottom, 0px));
     left: 50%;
-    transform: translateX(-50%) translateY(10px);
+    transform: translateX(-50%) translateY(0);
     background: var(--fg);
     color: var(--bg);
     font-family: var(--mono);
     font-size: 0.8rem;
     padding: 8px 14px;
     border-radius: 7px;
-    opacity: 0;
     pointer-events: none;
-    transition: opacity .15s ease, transform .15s ease;
     z-index: 20;
   }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast-fade-enter-active, .toast-fade-leave-active {
+    transition: opacity .2s ease, transform .2s ease;
+  }
+  .toast-fade-enter-from, .toast-fade-leave-to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
 
   @media (max-width: 480px) {
     .job-head { flex-direction: column; gap: 2px; }
@@ -295,9 +330,9 @@
 
   <div class="wrap">
 
-    <div class="hero">
+    <div class="hero" :class="{ loaded }">
       <div class="eyebrow"><span class="prompt">~$</span> whoami</div>
-      <h1>{{ data.name }}</h1>
+      <h1 class="shimmer">{{ data.name }}</h1>
       <div class="role">
         <strong>{{ data.titleStrong }}</strong> — <span>{{ tagline }}</span><span class="cursor">&nbsp;</span>
       </div>
@@ -316,7 +351,7 @@
     <section ref="secImpact">
       <div class="section-head"><span class="prompt">~$</span> cat impact.log</div>
       <div class="impact-grid">
-        <div class="tile" v-for="(tile, i) in data.impact" :key="i">
+        <div class="tile" v-for="(tile, i) in data.impact" :key="i" :style="{ transitionDelay: (i * 70) + 'ms' }">
           <span class="num">{{ displayedImpact[i] }}</span>
           <span class="label">{{ tile.label }}</span>
         </div>
@@ -325,7 +360,7 @@
 
     <section ref="secExperience">
       <div class="section-head"><span class="prompt">~$</span> ls experience/</div>
-      <div class="job" v-for="(job, i) in data.experience" :key="i" :class="{ current: job.current }">
+      <div class="job" v-for="(job, i) in data.experience" :key="i" :class="{ current: job.current }" :style="{ transitionDelay: (i * 90) + 'ms' }">
         <div class="job-head">
           <div class="job-title">{{ job.title }}</div>
           <div class="job-dates">{{ job.dates }}</div>
@@ -339,7 +374,7 @@
 
     <section ref="secSkills">
       <div class="section-head"><span class="prompt">~$</span> cat skills.json</div>
-      <div class="skill-group" v-for="(group, i) in data.skills" :key="i">
+      <div class="skill-group" v-for="(group, i) in data.skills" :key="i" :style="{ transitionDelay: (i * 60) + 'ms' }">
         <span class="cat">{{ group.cat }}</span>
         <div class="chips">
           <span class="chip" v-for="(s, j) in group.items" :key="j">{{ s }}</span>
@@ -365,7 +400,9 @@
 
   </div>
 
-  <div class="toast" :class="{ show: toastVisible }">{{ toastMsg }}</div>
+  <Transition name="toast-fade">
+    <div class="toast" v-if="toastVisible">{{ toastMsg }}</div>
+  </Transition>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
@@ -528,10 +565,14 @@
         });
       }
 
+      // Hero entrance, triggered one frame after mount so the transition fires
+      const loaded = ref(false);
+
       onMounted(() => {
         applyTheme();
         tlTimer = setInterval(rotateTagline, 2600);
         setupObserver();
+        requestAnimationFrame(() => requestAnimationFrame(() => { loaded.value = true; }));
       });
       onBeforeUnmount(() => {
         clearInterval(tlTimer);
@@ -539,7 +580,7 @@
       });
 
       return {
-        data, tagline, theme, toggleTheme, copy,
+        data, tagline, theme, toggleTheme, copy, loaded,
         toastMsg, toastVisible, displayedImpact,
         secImpact, secExperience, secSkills, secEducation,
       };

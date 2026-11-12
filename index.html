@@ -1,3 +1,8 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sahil Patil — Backend Engineer</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -8,7 +13,7 @@
     Layout concept: a single-column "terminal session" reading top to bottom —
     each section is framed like a shell command output (prompt + cwd as the
     section eyebrow), which is an authentic device for a backend engineer's
-    page rather than decoration.
+    page rather than decoration. Vue drives the data + the motion on top of it.
   */
   :root {
     --bg: #f7f8fa;
@@ -46,6 +51,7 @@
 
   * { box-sizing: border-box; }
   body {
+    margin: 0;
     background: var(--bg);
     color: var(--fg);
     font-family: var(--sans);
@@ -57,7 +63,26 @@
     max-width: 760px;
     margin: 0 auto;
     padding-block: 56px 80px;
+    position: relative;
   }
+
+  /* ---------- Theme toggle ---------- */
+  .theme-toggle {
+    position: fixed;
+    top: max(16px, env(safe-area-inset-top, 0px));
+    right: max(16px, env(safe-area-inset-right, 0px));
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 7px 13px;
+    cursor: pointer;
+    z-index: 30;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .theme-toggle:hover { border-color: var(--accent); color: var(--fg); }
 
   /* ---------- Hero ---------- */
   .hero { display: flex; flex-direction: column; gap: 18px; margin-bottom: 56px; }
@@ -76,17 +101,17 @@
     text-wrap: balance;
     letter-spacing: -0.01em;
   }
-  .role {
-    font-size: 1.05rem;
-    color: var(--muted);
-    font-weight: 500;
-  }
+  .role { font-size: 1.05rem; color: var(--muted); font-weight: 500; min-height: 1.4em; }
   .role strong { color: var(--fg); font-weight: 600; }
-  .bio {
-    max-width: 62ch;
-    font-size: 1rem;
-    color: var(--fg);
+  .role .cursor {
+    display: inline-block;
+    width: 2px;
+    background: var(--accent);
+    margin-left: 2px;
+    animation: blink 1s step-end infinite;
   }
+  @keyframes blink { 50% { opacity: 0; } }
+  .bio { max-width: 62ch; font-size: 1rem; color: var(--fg); }
   .links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
   .btn {
     font-family: var(--mono);
@@ -101,13 +126,11 @@
     align-items: center;
     gap: 7px;
     transition: border-color .15s ease, transform .15s ease;
+    background: none;
+    cursor: pointer;
   }
   .btn:hover { border-color: var(--accent); transform: translateY(-1px); }
-  .btn.primary {
-    background: var(--accent);
-    color: var(--accent-fg);
-    border-color: var(--accent);
-  }
+  .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
   .contact-row { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 4px; }
   .contact-item {
     font-family: var(--mono);
@@ -123,8 +146,14 @@
   }
   .contact-item:hover { color: var(--fg); }
 
-  /* ---------- Sections ---------- */
-  section { margin-bottom: 52px; }
+  /* ---------- Sections (reveal on scroll) ---------- */
+  section {
+    margin-bottom: 52px;
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  section.visible { opacity: 1; transform: translateY(0); }
   .section-head {
     font-family: var(--mono);
     font-size: 0.85rem;
@@ -136,18 +165,16 @@
   .section-head .prompt { color: var(--accent); }
 
   /* ---------- Impact tiles ---------- */
-  .impact-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 14px;
-  }
+  .impact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
   .tile {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 18px 16px;
     min-width: 0;
+    transition: border-color .15s ease, transform .15s ease;
   }
+  .tile:hover { border-color: var(--accent); transform: translateY(-2px); }
   .tile .num {
     font-family: var(--mono);
     font-size: 1.5rem;
@@ -156,31 +183,33 @@
     font-variant-numeric: tabular-nums;
     display: block;
   }
-  .tile .label {
-    font-size: 0.85rem;
-    color: var(--muted);
-    margin-top: 4px;
-    display: block;
-  }
+  .tile .label { font-size: 0.85rem; color: var(--muted); margin-top: 4px; display: block; }
 
   /* ---------- Experience ---------- */
-  .job { margin-bottom: 32px; }
+  .job {
+    margin-bottom: 32px;
+    border-left: 2px solid var(--border);
+    padding-left: 18px;
+    position: relative;
+    transition: border-color .2s ease;
+  }
+  .job::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background .2s ease;
+  }
+  .job.current { border-left-color: var(--accent); }
+  .job.current::before { background: var(--accent); }
   .job:last-child { margin-bottom: 0; }
-  .job-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 4px;
-  }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
   .job-title { font-weight: 600; font-size: 1.02rem; }
-  .job-dates {
-    font-family: var(--mono);
-    font-size: 0.78rem;
-    color: var(--muted);
-    white-space: nowrap;
-  }
+  .job-dates { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
   .job-company { color: var(--muted); font-size: 0.92rem; margin-bottom: 10px; }
   .job ul { margin: 0; padding-left: 20px; }
   .job li { margin-bottom: 6px; }
@@ -197,6 +226,7 @@
     letter-spacing: 0.06em;
     margin-bottom: 8px;
     display: block;
+    cursor: default;
   }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .chip {
@@ -207,7 +237,9 @@
     border-radius: 6px;
     padding: 5px 10px;
     color: var(--fg);
+    transition: border-color .15s ease, transform .15s ease;
   }
+  .chip:hover { border-color: var(--accent); transform: translateY(-1px); }
 
   /* ---------- Education ---------- */
   .edu-row { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
@@ -252,157 +284,267 @@
     footer { flex-direction: column; }
   }
 </style>
+</head>
+<body>
 
-<div class="wrap">
+<div id="app">
+  <button class="theme-toggle" @click="toggleTheme" :aria-label="'Switch to ' + (theme === 'dark' ? 'light' : 'dark') + ' theme'">
+    {{ theme === 'dark' ? '☀ light' : '🌙 dark' }}
+  </button>
 
-  <div class="hero">
-    <div class="eyebrow"><span class="prompt">~$</span> whoami</div>
-    <h1>Sahil Patil</h1>
-    <div class="role"><strong>Senior Backend Engineer</strong> — Go · Microservices · Distributed Systems</div>
-    <p class="bio">Backend engineer with 5+ years building high-throughput Golang microservices across AdTech, FinTech, FoodTech and GovTech. Currently own real-time retail-media services at Pentaleap serving 2M+ requests/day for 6 retail clients.</p>
-    <div class="links">
-      <a class="btn primary" href="https://github.com/sahilpatil2997" target="_blank" rel="noopener">↗ GitHub</a>
-      <a class="btn" href="https://www.linkedin.com/in/tecsavy/" target="_blank" rel="noopener">↗ LinkedIn</a>
+  <div class="wrap">
+
+    <div class="hero">
+      <div class="eyebrow"><span class="prompt">~$</span> whoami</div>
+      <h1>{{ data.name }}</h1>
+      <div class="role">
+        <strong>{{ data.titleStrong }}</strong> — <span>{{ tagline }}</span><span class="cursor">&nbsp;</span>
+      </div>
+      <p class="bio">{{ data.bio }}</p>
+      <div class="links">
+        <a class="btn primary" :href="data.github" target="_blank" rel="noopener">↗ GitHub</a>
+        <a class="btn" :href="data.linkedin" target="_blank" rel="noopener">↗ LinkedIn</a>
+      </div>
+      <div class="contact-row">
+        <button class="contact-item" @click="copy(data.email)">✉ {{ data.email }}</button>
+        <button class="contact-item" @click="copy(data.phone)">☎ {{ data.phone }}</button>
+        <span class="contact-item" style="cursor:default">📍 {{ data.location }}</span>
+      </div>
     </div>
-    <div class="contact-row">
-      <button class="contact-item" data-copy="sahilpatil97@gmail.com">✉ sahilpatil97@gmail.com</button>
-      <button class="contact-item" data-copy="+91 9167986795">☎ +91 9167986795</button>
-      <span class="contact-item" style="cursor:default">📍 Mumbai, India</span>
-    </div>
+
+    <section ref="secImpact">
+      <div class="section-head"><span class="prompt">~$</span> cat impact.log</div>
+      <div class="impact-grid">
+        <div class="tile" v-for="(tile, i) in data.impact" :key="i">
+          <span class="num">{{ displayedImpact[i] }}</span>
+          <span class="label">{{ tile.label }}</span>
+        </div>
+      </div>
+    </section>
+
+    <section ref="secExperience">
+      <div class="section-head"><span class="prompt">~$</span> ls experience/</div>
+      <div class="job" v-for="(job, i) in data.experience" :key="i" :class="{ current: job.current }">
+        <div class="job-head">
+          <div class="job-title">{{ job.title }}</div>
+          <div class="job-dates">{{ job.dates }}</div>
+        </div>
+        <div class="job-company">{{ job.company }}</div>
+        <ul>
+          <li v-for="(b, j) in job.bullets" :key="j">{{ b }}</li>
+        </ul>
+      </div>
+    </section>
+
+    <section ref="secSkills">
+      <div class="section-head"><span class="prompt">~$</span> cat skills.json</div>
+      <div class="skill-group" v-for="(group, i) in data.skills" :key="i">
+        <span class="cat">{{ group.cat }}</span>
+        <div class="chips">
+          <span class="chip" v-for="(s, j) in group.items" :key="j">{{ s }}</span>
+        </div>
+      </div>
+    </section>
+
+    <section ref="secEducation">
+      <div class="section-head"><span class="prompt">~$</span> cat education.yml</div>
+      <div class="edu-row">
+        <div>
+          <div class="edu-degree">{{ data.education.degree }}</div>
+          <div class="edu-school">{{ data.education.school }}</div>
+        </div>
+        <div class="edu-dates">{{ data.education.dates }}</div>
+      </div>
+    </section>
+
+    <footer>
+      <span>{{ data.footerNote }}</span>
+      <span><a :href="data.github" target="_blank" rel="noopener">github.com/sahilpatil2997</a> &middot; <a :href="data.linkedin" target="_blank" rel="noopener">linkedin.com/in/tecsavy</a></span>
+    </footer>
+
   </div>
 
-  <section>
-    <div class="section-head"><span class="prompt">~$</span> cat impact.log</div>
-    <div class="impact-grid">
-      <div class="tile"><span class="num">2M+</span><span class="label">requests/day served (Pentaleap)</span></div>
-      <div class="tile"><span class="num">~70%</span><span class="label">fewer repeat production incidents</span></div>
-      <div class="tile"><span class="num">1M</span><span class="label">orders/day on a FoodTech platform</span></div>
-      <div class="tile"><span class="num">40% / 70%</span><span class="label">faster onboarding / faster APIs</span></div>
-    </div>
-  </section>
-
-  <section>
-    <div class="section-head"><span class="prompt">~$</span> ls experience/</div>
-
-    <div class="job">
-      <div class="job-head">
-        <div class="job-title">Backend Engineer</div>
-        <div class="job-dates">Jan 2023 — Present</div>
-      </div>
-      <div class="job-company">Pentaleap GmbH (formerly Crealytics) · Remote / Mumbai</div>
-      <ul>
-        <li>Built a real-time Go service that caches bid-based sponsored products in Redis, serving the sponsoring engine at 2M+ requests/day.</li>
-        <li>Designed the core ranking and sponsoring algorithms deciding which sponsored products shoppers see, in production for 6 retail clients.</li>
-        <li>Cut repeat production incidents by nearly 70% through root-cause fixes, bringing services back within SLA.</li>
-        <li>Raised test coverage to 60% with unit and BDD suites across core services.</li>
-        <li>Designed event-driven services over gRPC and NATS, containerized with Docker and deployed to Kubernetes on AWS and GCP via CI/CD.</li>
-      </ul>
-    </div>
-
-    <div class="job">
-      <div class="job-head">
-        <div class="job-title">Golang Developer</div>
-        <div class="job-dates">May 2021 — Dec 2022</div>
-      </div>
-      <div class="job-company">Coditation Systems Pvt. Ltd. · Pune</div>
-      <ul>
-        <li>Architected a FoodTech platform on Go microservices (gRPC, PostgreSQL, Kubernetes) supporting 1M orders/day.</li>
-        <li>Built an Account Aggregator framework for a money-lending platform, integrating third-party financial APIs for consent-based onboarding.</li>
-        <li>Cut customer onboarding time by 40% and API response times by 70% redesigning the lending platform's onboarding flow.</li>
-        <li>Built a GraphQL client code generator in Go (dave/jennifer) and a GraphQL-based Salesforce connector, saving ~2 hours per integration.</li>
-        <li>Built the Go backend for Maharashtra's FYJC 2020 state-wide Class 11 admission portal, serving 5 lakh+ applicants, plus a Vue.js grievance module.</li>
-      </ul>
-    </div>
-
-    <div class="job">
-      <div class="job-head">
-        <div class="job-title">Project Trainee, Software Development</div>
-        <div class="job-dates">Jul 2019 — Apr 2021</div>
-      </div>
-      <div class="job-company">MKCL (Maharashtra Knowledge Corporation Ltd.) · Navi Mumbai</div>
-      <ul>
-        <li>Delivered the Portals and Deployment Manager modules of Application Studio, a low-code platform for automated web app development.</li>
-      </ul>
-    </div>
-  </section>
-
-  <section>
-    <div class="section-head"><span class="prompt">~$</span> cat skills.json</div>
-    <div class="skill-group">
-      <span class="cat">Languages</span>
-      <div class="chips">
-        <span class="chip">Go</span><span class="chip">Scala</span><span class="chip">SQL</span><span class="chip">JavaScript (Vue.js)</span><span class="chip">Python</span>
-      </div>
-    </div>
-    <div class="skill-group">
-      <span class="cat">Backend &amp; architecture</span>
-      <div class="chips">
-        <span class="chip">Microservices</span><span class="chip">Distributed Systems</span><span class="chip">Event-Driven Architecture</span><span class="chip">System Design</span><span class="chip">REST</span><span class="chip">gRPC</span><span class="chip">GraphQL</span><span class="chip">NATS</span>
-      </div>
-    </div>
-    <div class="skill-group">
-      <span class="cat">Data</span>
-      <div class="chips">
-        <span class="chip">PostgreSQL</span><span class="chip">MySQL</span><span class="chip">MongoDB</span><span class="chip">Redis</span>
-      </div>
-    </div>
-    <div class="skill-group">
-      <span class="cat">Cloud &amp; DevOps</span>
-      <div class="chips">
-        <span class="chip">Docker</span><span class="chip">Kubernetes</span><span class="chip">CI/CD</span><span class="chip">AWS (EC2, S3, API Gateway, Elastic Beanstalk, CloudWatch)</span><span class="chip">GCP</span>
-      </div>
-    </div>
-    <div class="skill-group">
-      <span class="cat">Testing &amp; tools</span>
-      <div class="chips">
-        <span class="chip">Unit Testing</span><span class="chip">BDD</span><span class="chip">Git</span><span class="chip">Agile/Scrum</span>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="section-head"><span class="prompt">~$</span> cat education.yml</div>
-    <div class="edu-row">
-      <div>
-        <div class="edu-degree">Bachelor of Engineering, Information Technology</div>
-        <div class="edu-school">Terna Engineering College, Navi Mumbai</div>
-      </div>
-      <div class="edu-dates">Jun 2015 — Jun 2019</div>
-    </div>
-  </section>
-
-  <footer>
-    <span>Open to Go backend roles · remote or Mumbai-based</span>
-    <span><a href="https://github.com/sahilpatil2997" target="_blank" rel="noopener">github.com/sahilpatil2997</a> · <a href="https://www.linkedin.com/in/tecsavy/" target="_blank" rel="noopener">linkedin.com/in/tecsavy</a></span>
-  </footer>
-
+  <div class="toast" :class="{ show: toastVisible }">{{ toastMsg }}</div>
 </div>
 
-<div class="toast" id="toast">Copied</div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
 <script>
-  (function () {
-    var toast = document.getElementById('toast');
-    var toastTimer;
-    function showToast(msg) {
-      toast.textContent = msg;
-      toast.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 1400);
-    }
-    document.querySelectorAll('.contact-item[data-copy]').forEach(function (el) {
-      el.addEventListener('click', function () {
-        var text = el.getAttribute('data-copy');
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(function () {
-            showToast('Copied ' + text);
-          }).catch(function () {
-            showToast(text);
-          });
-        } else {
-          showToast(text);
-        }
+  const { createApp, ref, reactive, onMounted, onBeforeUnmount } = Vue;
+
+  createApp({
+    setup() {
+      const data = reactive({
+        name: "Sahil Patil",
+        titleStrong: "Backend Engineer",
+        bio: "Backend engineer with 7+ years building production Golang microservices across AdTech, FinTech, FoodTech and GovTech. Owns real-time retail-media ranking and sponsoring services at Pentaleap, live across 6 retail clients, with Prometheus/Grafana/OpenTelemetry observability driving a ~70% cut in repeat production incidents.",
+        email: "sahilpatil97@gmail.com",
+        phone: "+91 9167986795",
+        location: "Mumbai, India",
+        github: "https://github.com/sahilpatil2997",
+        linkedin: "https://www.linkedin.com/in/tecsavy/",
+        footerNote: "Open to Go backend roles · remote or Mumbai-based",
+        impact: [
+          { value: 2, suffix: "M+", label: "requests/day served (Pentaleap)" },
+          { value: 70, suffix: "%", prefix: "~", label: "fewer repeat production incidents" },
+          { value: 1, suffix: "M", label: "orders/day on a FoodTech platform" },
+          { value: null, display: "40% / 70%", label: "faster onboarding / faster APIs" },
+        ],
+        experience: [
+          {
+            title: "Backend Engineer",
+            dates: "Jan 2023 — Present",
+            company: "Pentaleap GmbH (formerly Crealytics) · Remote / Mumbai",
+            current: true,
+            bullets: [
+              "Reduced repeat production incidents by nearly 70%, measured by Prometheus/Grafana dashboards and OpenTelemetry traces, by root-causing client-reported defects and restoring services within SLA.",
+              "Served 2M+ requests/day across 6 retail clients, measured by production traffic logs, by building a real-time Go service that uses goroutines and channels to concurrently cache and rank bid-based sponsored products in Redis.",
+              "Raised test coverage to 60%, measured by coverage reports, by introducing unit and BDD test suites across core Go services.",
+              "Delivered event-driven infrastructure on AWS and GCP, measured by CI/CD deployment frequency, by designing gRPC, Kafka and NATS-based services, containerized with Docker and orchestrated on Kubernetes.",
+            ],
+          },
+          {
+            title: "Golang Developer",
+            dates: "May 2021 — Dec 2022",
+            company: "Coditation Systems Pvt. Ltd. · Pune",
+            bullets: [
+              "Supported 1M orders/day, measured by order-processing throughput, by architecting Go microservices with gRPC and PostgreSQL, using goroutines for concurrent order handling, deployed on Kubernetes.",
+              "Cut onboarding time 40% and API response times 70%, measured by platform analytics, by redesigning a money-lending platform's onboarding flow and integrating third-party financial APIs via an Account Aggregator framework.",
+              "Saved ~2 hours of manual coding per integration, measured by engineering time tracking, by building a GraphQL client code generator in Go (dave/jennifer) and a GraphQL-based Salesforce connector.",
+            ],
+          },
+          {
+            title: "Project Trainee, Software Development",
+            dates: "Jul 2019 — Apr 2021",
+            company: "MKCL (Maharashtra Knowledge Corporation Ltd.) · Navi Mumbai",
+            bullets: [
+              "Served 500K+ applicants statewide, measured by portal usage during admission season, by building Go backend APIs and a Docker/Kubernetes/CI-CD deployment for the FYJC 2020 Class 11 admission portal.",
+              "Reduced grievance-ticket turnaround, measured by resolution time, by developing Go REST APIs and a Vue.js frontend for the FYJC Grievance Module.",
+              "Delivered the Portals and Deployment Manager modules of Application Studio, a low-code platform for automated web app development.",
+            ],
+          },
+        ],
+        skills: [
+          { cat: "Languages", items: ["Go", "Scala", "SQL", "JavaScript (Vue.js)", "Python"] },
+          { cat: "Backend & architecture", items: ["Microservices", "Distributed Systems", "Event-Driven Architecture", "System Design", "REST", "gRPC", "GraphQL", "Kafka", "NATS"] },
+          { cat: "Data", items: ["PostgreSQL", "MySQL", "MongoDB", "Redis"] },
+          { cat: "Cloud & DevOps", items: ["Docker", "Kubernetes", "CI/CD", "AWS (EC2, S3, API Gateway, Elastic Beanstalk, CloudWatch)", "GCP"] },
+          { cat: "Observability", items: ["Prometheus", "Grafana", "OpenTelemetry"] },
+          { cat: "Testing & tools", items: ["Unit Testing", "BDD", "Git", "Agile/Scrum"] },
+        ],
+        education: {
+          degree: "Bachelor of Engineering, Information Technology",
+          school: "Terna Engineering College, Navi Mumbai",
+          dates: "Jun 2015 — Jun 2019",
+        },
       });
-    });
-  })();
+
+      // Rotating tagline, typed-style
+      const taglines = [
+        "Go · Microservices · Distributed Systems",
+        "7+ years shipping production Go",
+        "2M+ req/day in production at Pentaleap",
+      ];
+      const tagline = ref(taglines[0]);
+      let tlIndex = 0, tlTimer = null;
+      function rotateTagline() {
+        tlIndex = (tlIndex + 1) % taglines.length;
+        tagline.value = taglines[tlIndex];
+      }
+
+      // Theme toggle (manual override on top of prefers-color-scheme)
+      let storedTheme = null;
+      try { storedTheme = localStorage.getItem('theme'); } catch (e) {}
+      const theme = ref(storedTheme || 'system');
+      function applyTheme() {
+        if (theme.value === 'system') {
+          document.documentElement.removeAttribute('data-theme');
+        } else {
+          document.documentElement.setAttribute('data-theme', theme.value);
+        }
+      }
+      function toggleTheme() {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const current = theme.value === 'system' ? (prefersDark ? 'dark' : 'light') : theme.value;
+        theme.value = current === 'dark' ? 'light' : 'dark';
+        try { localStorage.setItem('theme', theme.value); } catch (e) {}
+        applyTheme();
+      }
+
+      // Copy to clipboard + toast
+      const toastMsg = ref('Copied');
+      const toastVisible = ref(false);
+      let toastTimer = null;
+      function copy(text) {
+        function show() {
+          toastMsg.value = 'Copied ' + text;
+          toastVisible.value = true;
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(() => { toastVisible.value = false; }, 1400);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(show).catch(show);
+        } else {
+          show();
+        }
+      }
+
+      // Count-up impact tiles, triggered once visible
+      const displayedImpact = reactive(data.impact.map(t => t.display ? t.display : '0'));
+      function formatImpact(i, current) {
+        const t = data.impact[i];
+        if (t.display) return t.display;
+        return (t.prefix || '') + current + (t.suffix || '');
+      }
+      function runCountUp() {
+        data.impact.forEach((t, i) => {
+          if (t.display) { displayedImpact[i] = t.display; return; }
+          const duration = 900;
+          const start = performance.now();
+          function step(now) {
+            const p = Math.min(1, (now - start) / duration);
+            const current = Math.round(p * t.value);
+            displayedImpact[i] = formatImpact(i, current);
+            if (p < 1) requestAnimationFrame(step);
+          }
+          requestAnimationFrame(step);
+        });
+      }
+
+      // Reveal-on-scroll for sections
+      const secImpact = ref(null), secExperience = ref(null), secSkills = ref(null), secEducation = ref(null);
+      let observer = null;
+      function setupObserver() {
+        observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              if (entry.target === secImpact.value) runCountUp();
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.15 });
+        [secImpact, secExperience, secSkills, secEducation].forEach(s => {
+          if (s.value) observer.observe(s.value);
+        });
+      }
+
+      onMounted(() => {
+        applyTheme();
+        tlTimer = setInterval(rotateTagline, 2600);
+        setupObserver();
+      });
+      onBeforeUnmount(() => {
+        clearInterval(tlTimer);
+        if (observer) observer.disconnect();
+      });
+
+      return {
+        data, tagline, theme, toggleTheme, copy,
+        toastMsg, toastVisible, displayedImpact,
+        secImpact, secExperience, secSkills, secEducation,
+      };
+    },
+  }).mount('#app');
 </script>
+</body>
+</html>

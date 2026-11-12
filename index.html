@@ -151,6 +151,7 @@
   }
   .btn:hover { border-color: var(--accent); transform: translateY(-1px); }
   .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  .btn.primary, .theme-toggle { transition: border-color .15s ease, transform .12s ease, color .15s ease; }
   .contact-row { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 4px; }
   .contact-item {
     font-family: var(--mono);
@@ -197,7 +198,8 @@
     transition: opacity .45s ease, transform .45s ease, border-color .15s ease;
   }
   section.visible .tile { opacity: 1; transform: translateY(0); }
-  .tile:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .tile { cursor: pointer; }
+  .tile:hover { border-color: var(--accent); transition-duration: .1s; }
   .tile .num {
     font-family: var(--mono);
     font-size: 1.5rem;
@@ -219,6 +221,7 @@
     transition: opacity .45s ease, transform .45s ease, border-color .2s ease;
   }
   section.visible .job { opacity: 1; transform: translateY(0); }
+  .job:hover { transition-duration: .1s; }
   .job::before {
     content: '';
     position: absolute;
@@ -272,6 +275,15 @@
     transition: border-color .15s ease, transform .15s ease;
   }
   .chip:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .chip.matched { cursor: pointer; position: relative; }
+  .chip.matched::after {
+    content: '';
+    position: absolute;
+    top: -2px; right: -2px;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
 
   /* ---------- Education ---------- */
   .edu-row { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
@@ -315,6 +327,77 @@
     transform: translateX(-50%) translateY(10px);
   }
 
+  /* ---------- Hover tooltip ---------- */
+  .hover-tip {
+    position: fixed;
+    transform: translate(-50%, -120%);
+    max-width: 260px;
+    background: var(--fg);
+    color: var(--bg);
+    font-size: 0.78rem;
+    font-family: var(--sans);
+    line-height: 1.4;
+    padding: 8px 11px;
+    border-radius: 8px;
+    pointer-events: none;
+    z-index: 45;
+    box-shadow: 0 8px 20px rgba(0,0,0,.2);
+  }
+  .tip-fade-enter-active, .tip-fade-leave-active { transition: opacity .12s ease; }
+  .tip-fade-enter-from, .tip-fade-leave-to { opacity: 0; }
+
+  /* ---------- Detail modal ---------- */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 20px;
+  }
+  .modal-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    max-width: 440px;
+    width: 100%;
+    padding: 26px;
+    position: relative;
+  }
+  .modal-close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 1rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+  }
+  .modal-close:hover { color: var(--fg); }
+  .modal-title { font-weight: 700; font-size: 1.1rem; padding-right: 20px; }
+  .modal-meta { font-family: var(--mono); font-size: 0.78rem; color: var(--accent); margin: 4px 0 16px; }
+  .modal-line {
+    font-size: 0.92rem;
+    line-height: 1.55;
+    padding-left: 14px;
+    position: relative;
+    margin-bottom: 10px;
+  }
+  .modal-line:last-child { margin-bottom: 0; }
+  .modal-line::before { content: '•'; position: absolute; left: 0; color: var(--accent); }
+
+  .modal-enter-active, .modal-leave-active { transition: opacity .2s ease; }
+  .modal-enter-from, .modal-leave-to { opacity: 0; }
+  .modal-enter-active .modal-card, .modal-leave-active .modal-card { transition: transform .2s ease; }
+  .modal-enter-from .modal-card, .modal-leave-to .modal-card { transform: scale(.94) translateY(6px); }
+
   @media (max-width: 480px) {
     .job-head { flex-direction: column; gap: 2px; }
     footer { flex-direction: column; }
@@ -324,7 +407,7 @@
 <body>
 
 <div id="app">
-  <button class="theme-toggle" @click="toggleTheme" :aria-label="'Switch to ' + (theme === 'dark' ? 'light' : 'dark') + ' theme'">
+  <button class="theme-toggle" @click="toggleTheme" @mousemove="magnetMove" @mouseleave="magnetLeave" :aria-label="'Switch to ' + (theme === 'dark' ? 'light' : 'dark') + ' theme'">
     {{ theme === 'dark' ? '☀ light' : '🌙 dark' }}
   </button>
 
@@ -338,7 +421,7 @@
       </div>
       <p class="bio">{{ data.bio }}</p>
       <div class="links">
-        <a class="btn primary" :href="data.github" target="_blank" rel="noopener">↗ GitHub</a>
+        <a class="btn primary" :href="data.github" target="_blank" rel="noopener" @mousemove="magnetMove" @mouseleave="magnetLeave">↗ GitHub</a>
         <a class="btn" :href="data.linkedin" target="_blank" rel="noopener">↗ LinkedIn</a>
       </div>
       <div class="contact-row">
@@ -351,7 +434,16 @@
     <section ref="secImpact">
       <div class="section-head"><span class="prompt">~$</span> cat impact.log</div>
       <div class="impact-grid">
-        <div class="tile" v-for="(tile, i) in data.impact" :key="i" :style="{ transitionDelay: (i * 70) + 'ms' }">
+        <div
+          class="tile"
+          v-for="(tile, i) in data.impact"
+          :key="i"
+          :style="{ transitionDelay: (i * 70) + 'ms' }"
+          @mouseenter="showTip($event, tile.detail)"
+          @mousemove="moveTip($event); tiltMove($event)"
+          @mouseleave="hideTip(); tiltLeave($event)"
+          @click="openModal(tile.label, displayedImpact[i], [tile.detail])"
+        >
           <span class="num">{{ displayedImpact[i] }}</span>
           <span class="label">{{ tile.label }}</span>
         </div>
@@ -360,7 +452,15 @@
 
     <section ref="secExperience">
       <div class="section-head"><span class="prompt">~$</span> ls experience/</div>
-      <div class="job" v-for="(job, i) in data.experience" :key="i" :class="{ current: job.current }" :style="{ transitionDelay: (i * 90) + 'ms' }">
+      <div
+        class="job"
+        v-for="(job, i) in data.experience"
+        :key="i"
+        :class="{ current: job.current }"
+        :style="{ transitionDelay: (i * 90) + 'ms' }"
+        @mousemove="tiltMove($event, 2)"
+        @mouseleave="tiltLeave"
+      >
         <div class="job-head">
           <div class="job-title">{{ job.title }}</div>
           <div class="job-dates">{{ job.dates }}</div>
@@ -377,7 +477,16 @@
       <div class="skill-group" v-for="(group, i) in data.skills" :key="i" :style="{ transitionDelay: (i * 60) + 'ms' }">
         <span class="cat">{{ group.cat }}</span>
         <div class="chips">
-          <span class="chip" v-for="(s, j) in group.items" :key="j">{{ s }}</span>
+          <span
+            class="chip"
+            :class="{ matched: skillMatches(s).length }"
+            v-for="(s, j) in group.items"
+            :key="j"
+            @mouseenter="skillMatches(s).length && showTip($event, 'Used at: ' + skillMatches(s).map(m => m.company).join(', '))"
+            @mousemove="moveTip"
+            @mouseleave="hideTip"
+            @click="skillMatches(s).length && openSkillModal(s)"
+          >{{ s }}</span>
         </div>
       </div>
     </section>
@@ -403,6 +512,21 @@
   <Transition name="toast-fade">
     <div class="toast" v-if="toastVisible">{{ toastMsg }}</div>
   </Transition>
+
+  <Transition name="tip-fade">
+    <div class="hover-tip" v-if="hoverTip.show" :style="{ left: hoverTip.x + 'px', top: hoverTip.y + 'px' }">{{ hoverTip.text }}</div>
+  </Transition>
+
+  <Transition name="modal">
+    <div class="modal-backdrop" v-if="modal.open" @click.self="closeModal" @keydown.esc="closeModal">
+      <div class="modal-card">
+        <button class="modal-close" @click="closeModal" aria-label="Close">✕</button>
+        <div class="modal-title">{{ modal.title }}</div>
+        <div class="modal-meta">{{ modal.meta }}</div>
+        <p class="modal-line" v-for="(line, i) in modal.lines" :key="i">{{ line }}</p>
+      </div>
+    </div>
+  </Transition>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
@@ -422,10 +546,22 @@
         linkedin: "https://www.linkedin.com/in/tecsavy/",
         footerNote: "Open to Go backend roles · remote or Mumbai-based",
         impact: [
-          { value: 2, suffix: "M+", label: "requests/day served (Pentaleap)" },
-          { value: 70, suffix: "%", prefix: "~", label: "fewer repeat production incidents" },
-          { value: 1, suffix: "M", label: "orders/day on a FoodTech platform" },
-          { value: null, display: "40% / 70%", label: "faster onboarding / faster APIs" },
+          {
+            value: 2, suffix: "M+", label: "requests/day served (Pentaleap)",
+            detail: "Pentaleap — built a real-time Go service using goroutines and channels to concurrently cache and rank bid-based sponsored products in Redis, live for 6 retail clients.",
+          },
+          {
+            value: 70, suffix: "%", prefix: "~", label: "fewer repeat production incidents",
+            detail: "Pentaleap — root-caused client-reported defects using Prometheus/Grafana dashboards and OpenTelemetry traces, restoring services within SLA.",
+          },
+          {
+            value: 1, suffix: "M", label: "orders/day on a FoodTech platform",
+            detail: "Coditation — architected Go microservices with gRPC and PostgreSQL for a FoodTech platform, deployed on Kubernetes.",
+          },
+          {
+            value: null, display: "40% / 70%", label: "faster onboarding / faster APIs",
+            detail: "Coditation — redesigned a money-lending platform's onboarding flow and integrated third-party financial APIs via an Account Aggregator framework.",
+          },
         ],
         experience: [
           {
@@ -547,22 +683,102 @@
         });
       }
 
-      // Reveal-on-scroll for sections
+      // Reveal-on-scroll for sections, staggered into a cascade rather than popping in together
       const secImpact = ref(null), secExperience = ref(null), secSkills = ref(null), secEducation = ref(null);
+      const sectionOrder = [secImpact, secExperience, secSkills, secEducation];
       let observer = null;
       function setupObserver() {
         observer = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
             if (entry.isIntersecting) {
-              entry.target.classList.add('visible');
-              if (entry.target === secImpact.value) runCountUp();
+              const idx = sectionOrder.findIndex(s => s.value === entry.target);
+              setTimeout(() => {
+                entry.target.classList.add('visible');
+                if (entry.target === secImpact.value) runCountUp();
+              }, Math.max(idx, 0) * 150);
               observer.unobserve(entry.target);
             }
           });
         }, { threshold: 0.15 });
-        [secImpact, secExperience, secSkills, secEducation].forEach(s => {
+        sectionOrder.forEach(s => {
           if (s.value) observer.observe(s.value);
         });
+      }
+
+      // Magnetic hover for primary buttons / theme toggle
+      function magnetMove(e) {
+        const el = e.currentTarget;
+        const r = el.getBoundingClientRect();
+        const dx = e.clientX - (r.left + r.width / 2);
+        const dy = e.clientY - (r.top + r.height / 2);
+        el.style.transform = `translate(${dx * 0.18}px, ${dy * 0.35}px)`;
+      }
+      function magnetLeave(e) { e.currentTarget.style.transform = ''; }
+
+      // Tilt-on-hover for tiles/jobs
+      function tiltMove(e, strength = 6) {
+        const el = e.currentTarget;
+        const r = el.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        el.style.transform = `perspective(600px) rotateX(${(-py * strength).toFixed(2)}deg) rotateY(${(px * strength).toFixed(2)}deg) translateY(-2px)`;
+      }
+      function tiltLeave(e) { e.currentTarget.style.transform = ''; }
+
+      // Shared hover tooltip (follows the cursor)
+      const hoverTip = reactive({ show: false, x: 0, y: 0, text: '' });
+      function showTip(e, text) {
+        if (!text) return;
+        hoverTip.text = text;
+        hoverTip.show = true;
+        hoverTip.x = e.clientX;
+        hoverTip.y = e.clientY;
+      }
+      function moveTip(e) {
+        if (hoverTip.show) { hoverTip.x = e.clientX; hoverTip.y = e.clientY; }
+      }
+      function hideTip() { hoverTip.show = false; }
+
+      // Shared "detailed explanation" modal
+      const modal = reactive({ open: false, title: '', meta: '', lines: [] });
+      function openModal(title, meta, lines) {
+        modal.title = title;
+        modal.meta = meta;
+        modal.lines = lines;
+        modal.open = true;
+        hideTip();
+      }
+      function closeModal() { modal.open = false; }
+      function onEscKey(e) { if (e.key === 'Escape' && modal.open) closeModal(); }
+
+      // Maps a skill chip to the job(s) whose bullets literally mention it,
+      // so chips only link to roles where that's actually true.
+      function skillMatches(tag) {
+        const base = tag.split(' (')[0];
+        const words = base.split(/[\s/]+/).filter(w => w.length > 2);
+        const variants = new Set([base.toLowerCase(), ...words.map(w => w.toLowerCase())]);
+        if (variants.has('go')) variants.add('golang');
+        if (variants.has('javascript')) variants.add('vue.js');
+        if (base.toLowerCase() === 'ci/cd') { variants.add('ci-cd'); variants.add('ci/cd'); }
+        const results = [];
+        data.experience.forEach(job => {
+          const hitBullets = job.bullets.filter(b => {
+            const bl = b.toLowerCase();
+            return [...variants].some(v => /^[a-z]+$/.test(v) ? new RegExp('\\b' + v + '\\b').test(bl) : bl.includes(v));
+          });
+          if (hitBullets.length) {
+            results.push({ title: job.title, company: job.company.split(' · ')[0].split(' (')[0], bullets: hitBullets });
+          }
+        });
+        return results;
+      }
+      function openSkillModal(tag) {
+        const matches = skillMatches(tag);
+        openModal(
+          tag,
+          'Used at ' + matches.map(m => m.company).join(', '),
+          matches.flatMap(m => m.bullets),
+        );
       }
 
       // Hero entrance, triggered one frame after mount so the transition fires
@@ -572,17 +788,22 @@
         applyTheme();
         tlTimer = setInterval(rotateTagline, 2600);
         setupObserver();
+        window.addEventListener('keydown', onEscKey);
         requestAnimationFrame(() => requestAnimationFrame(() => { loaded.value = true; }));
       });
       onBeforeUnmount(() => {
         clearInterval(tlTimer);
         if (observer) observer.disconnect();
+        window.removeEventListener('keydown', onEscKey);
       });
 
       return {
         data, tagline, theme, toggleTheme, copy, loaded,
         toastMsg, toastVisible, displayedImpact,
         secImpact, secExperience, secSkills, secEducation,
+        magnetMove, magnetLeave, tiltMove, tiltLeave,
+        hoverTip, showTip, moveTip, hideTip,
+        modal, openModal, closeModal, skillMatches, openSkillModal,
       };
     },
   }).mount('#app');
